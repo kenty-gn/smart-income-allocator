@@ -1,65 +1,150 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+import { BudgetProgress, CategoryCard } from '@/components/dashboard';
+import { AIInput, ManualInput } from '@/components/input';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  mockCategories,
+  mockTransactions,
+  mockProfile,
+  calculateBudgetSummary,
+  calculateCategoryProgress,
+} from '@/lib/mock-data';
+import { Transaction } from '@/types/database';
+
+export default function DashboardPage() {
+  const [transactions, setTransactions] = useState(mockTransactions);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const budgetSummary = useMemo(() => {
+    return calculateBudgetSummary(
+      mockProfile.target_income,
+      mockCategories,
+      transactions
+    );
+  }, [transactions]);
+
+  const categoriesWithProgress = useMemo(() => {
+    return calculateCategoryProgress(
+      mockCategories,
+      transactions,
+      budgetSummary.disposable_income
+    );
+  }, [transactions, budgetSummary.disposable_income]);
+
+  const handleAddTransaction = (data: {
+    category_id: string;
+    amount: number;
+    date: string;
+    description: string;
+  }) => {
+    const newTransaction: Transaction = {
+      id: `t-${Date.now()}`,
+      user_id: mockProfile.id,
+      category_id: data.category_id,
+      amount: data.amount,
+      date: data.date,
+      description: data.description,
+      type: 'expense',
+    };
+    setTransactions((prev) => [...prev, newTransaction]);
+    setIsDialogOpen(false);
+  };
+
+  const handleAITransactionAdd = (
+    parsed: { amount: number; category: string; description: string }[]
+  ) => {
+    const newTransactions = parsed.map((p) => ({
+      id: `t-${Date.now()}-${Math.random()}`,
+      user_id: mockProfile.id,
+      category_id: p.category,
+      amount: p.amount,
+      date: new Date().toISOString().split('T')[0],
+      description: p.description,
+      type: 'expense' as const,
+    }));
+    setTransactions((prev) => [...prev, ...newTransactions]);
+  };
+
+  const fixedCategories = categoriesWithProgress.filter((c) => c.type === 'fixed');
+  const variableCategories = categoriesWithProgress.filter((c) => c.type === 'variable');
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <h1 className="text-2xl font-bold text-white">ダッシュボード</h1>
+          <p className="text-sm text-slate-400">今月の予算を確認</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
+              <Plus className="mr-2 h-4 w-4" />
+              支出を追加
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="border-slate-700 bg-slate-900 sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white">支出を追加</DialogTitle>
+            </DialogHeader>
+            <ManualInput
+              categories={mockCategories}
+              onTransactionAdd={handleAddTransaction}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </DialogContent>
+        </Dialog>
+      </motion.div>
+
+      {/* Budget Progress */}
+      <BudgetProgress summary={budgetSummary} />
+
+      {/* AI Input */}
+      <AIInput onTransactionAdd={handleAITransactionAdd} />
+
+      {/* Fixed Costs */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-white">固定費</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {fixedCategories.map((category, index) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              disposableIncome={budgetSummary.disposable_income}
+              index={index}
+            />
+          ))}
         </div>
-      </main>
+      </div>
+
+      {/* Variable Costs */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-white">変動費</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {variableCategories.map((category, index) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              disposableIncome={budgetSummary.disposable_income}
+              index={index + fixedCategories.length}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
