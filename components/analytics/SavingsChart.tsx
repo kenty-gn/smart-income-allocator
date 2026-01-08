@@ -60,8 +60,8 @@ export function SavingsChart({ data }: SavingsChartProps) {
                                 borderRadius: '8px',
                             }}
                             labelFormatter={formatMonth}
-                            formatter={(value: number) => [
-                                `¥${value.toLocaleString()}`,
+                            formatter={(value: number | undefined) => [
+                                `¥${(value ?? 0).toLocaleString()}`,
                                 '貯蓄額',
                             ]}
                         />
@@ -82,13 +82,13 @@ export function SavingsChart({ data }: SavingsChartProps) {
                 <div className="rounded-lg bg-slate-800/50 p-3 text-center">
                     <p className="text-xs text-slate-400">最大貯蓄</p>
                     <p className="text-lg font-bold text-emerald-400">
-                        ¥{Math.max(...data.map((d) => d.surplus)).toLocaleString()}
+                        ¥{data.length > 0 ? Math.max(...data.map((d) => d.surplus)).toLocaleString() : '0'}
                     </p>
                 </div>
                 <div className="rounded-lg bg-slate-800/50 p-3 text-center">
                     <p className="text-xs text-slate-400">平均貯蓄</p>
                     <p className="text-lg font-bold text-indigo-400">
-                        ¥{Math.round(data.reduce((sum, d) => sum + d.surplus, 0) / data.length).toLocaleString()}
+                        ¥{data.length > 0 ? Math.round(data.reduce((sum, d) => sum + d.surplus, 0) / data.length).toLocaleString() : '0'}
                     </p>
                 </div>
             </div>

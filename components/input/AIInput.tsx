@@ -32,7 +32,7 @@ export function AIInput({ onTransactionAdd }: AIInputProps) {
 
         try {
             const parsed = await parseTransaction(input);
-            if (parsed[0].amount === 0) {
+            if (parsed.length === 0 || (parsed[0] && parsed[0].amount === 0)) {
                 setError('入力を解析できませんでした。もう一度お試しください。');
             } else {
                 setResults(parsed);
@@ -52,12 +52,6 @@ export function AIInput({ onTransactionAdd }: AIInputProps) {
 
     const handleCancel = () => {
         setResults([]);
-    };
-
-    const categoryNames: Record<string, string> = {
-        'cat-5': '食費',
-        'cat-6': '趣味',
-        'cat-7': '交通費',
     };
 
     return (
@@ -128,7 +122,7 @@ export function AIInput({ onTransactionAdd }: AIInputProps) {
                                         ¥{result.amount.toLocaleString()}
                                     </span>
                                     <span className="ml-2 text-sm text-slate-400">
-                                        → {categoryNames[result.category] || result.category}
+                                        → {result.category}
                                     </span>
                                 </div>
                                 <span className="text-xs text-slate-500">{result.description}</span>
