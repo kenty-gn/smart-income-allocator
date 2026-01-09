@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Loader2 } from 'lucide-react';
-import { BudgetProgress, CategoryCard } from '@/components/dashboard';
+import { BudgetProgress, CategoryCard, SpendingForecast, SavingsChallenge } from '@/components/dashboard';
 import { AIInput, ManualInput } from '@/components/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CategoryWithSpend, BudgetSummary } from '@/types/database';
 
 export default function DashboardPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, isPro } = useAuth();
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { transactions, addTransaction, isLoading: transactionsLoading } = useTransactions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -125,7 +125,7 @@ export default function DashboardPage() {
   if (categoriesLoading || transactionsLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
       </div>
     );
   }
@@ -139,19 +139,19 @@ export default function DashboardPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">ダッシュボード</h1>
-          <p className="text-sm text-slate-400">今月の予算を確認</p>
+          <h1 className="text-2xl font-bold text-slate-900">ダッシュボード</h1>
+          <p className="text-sm text-slate-500">今月の予算を確認</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
+            <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
               <Plus className="mr-2 h-4 w-4" />
               支出を追加
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-slate-700 bg-slate-900 sm:max-w-md">
+          <DialogContent className="border-slate-200 bg-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-white">支出を追加</DialogTitle>
+              <DialogTitle className="text-slate-900">支出を追加</DialogTitle>
             </DialogHeader>
             <ManualInput
               categories={categories}
@@ -167,11 +167,25 @@ export default function DashboardPage() {
       {/* AI Input */}
       <AIInput onTransactionAdd={handleAITransactionAdd} />
 
+      {/* Spending Forecast - Pro Feature */}
+      <SpendingForecast
+        transactions={transactions}
+        targetIncome={targetIncome}
+        fixedCosts={budgetSummary.fixed_costs}
+      />
+
+      {/* Savings Challenge - Pro Feature */}
+      <SavingsChallenge
+        transactions={transactions}
+        categories={categories}
+        isPro={isPro}
+      />
+
       {/* Fixed Costs */}
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-white">固定費</h2>
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">固定費</h2>
         {fixedCategories.length === 0 ? (
-          <p className="text-slate-400">固定費カテゴリがありません</p>
+          <p className="text-slate-500">固定費カテゴリがありません</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {fixedCategories.map((category, index) => (
@@ -188,9 +202,9 @@ export default function DashboardPage() {
 
       {/* Variable Costs */}
       <div>
-        <h2 className="mb-4 text-lg font-semibold text-white">変動費</h2>
+        <h2 className="mb-4 text-lg font-semibold text-slate-900">変動費</h2>
         {variableCategories.length === 0 ? (
-          <p className="text-slate-400">変動費カテゴリがありません</p>
+          <p className="text-slate-500">変動費カテゴリがありません</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {variableCategories.map((category, index) => (

@@ -49,7 +49,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-emerald-50/50 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,24 +58,24 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
             <Sparkles className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">SmartBudget</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <h1 className="text-2xl font-bold text-slate-900">SmartBudget</h1>
+          <p className="mt-2 text-sm text-slate-500">
             スマートな家計管理を始めましょう
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur-sm">
-          <div className="mb-6 flex rounded-lg bg-slate-900/50 p-1">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6 flex rounded-lg bg-slate-100 p-1">
             <button
               type="button"
               onClick={() => setIsLogin(true)}
               className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${isLogin
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-emerald-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               ログイン
@@ -84,8 +84,8 @@ export default function LoginPage() {
               type="button"
               onClick={() => setIsLogin(false)}
               className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${!isLogin
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-emerald-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               新規登録
@@ -94,36 +94,36 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">
+              <Label htmlFor="email" className="text-slate-700">
                 メールアドレス
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="example@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="border-slate-600 bg-slate-900/50 pl-10 text-white placeholder:text-slate-500 focus:border-indigo-500"
+                  className="border-slate-200 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">
+              <Label htmlFor="password" className="text-slate-700">
                 パスワード
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="border-slate-600 bg-slate-900/50 pl-10 text-white placeholder:text-slate-500 focus:border-indigo-500"
+                  className="border-slate-200 bg-white pl-10 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500"
                   required
                   minLength={6}
                 />
@@ -134,7 +134,7 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400"
+                className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700"
               >
                 {error}
               </motion.div>
@@ -144,7 +144,7 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg bg-green-500/10 p-3 text-sm text-green-400"
+                className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-700"
               >
                 {message}
               </motion.div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 py-6 text-white hover:from-indigo-600 hover:to-purple-700"
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 py-6 text-white hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -163,7 +163,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-slate-400">
           続行することで、利用規約とプライバシーポリシーに同意したものとみなされます。
         </p>
       </motion.div>

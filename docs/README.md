@@ -27,18 +27,20 @@ npm run lint
 |---------|------|
 | [TASK.md](./TASK.md) | 開発タスクリスト（チェックリスト形式） |
 | [SPECIFICATION.md](./SPECIFICATION.md) | 技術仕様・アーキテクチャ |
-| [../SUPABASE_SETUP.md](../SUPABASE_SETUP.md) | Supabaseセットアップ手順 |
+| [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Supabaseセットアップ手順 |
 
 ---
 
 ## 📈 進捗状況
 
-| フェーズ | 状態 | 完了率 |
-|---------|------|--------|
-| フェーズ1: 認証連携 | 🔄 進行中 | 75% |
-| フェーズ2: DB連携 | ⏳ 未着手 | 0% |
-| フェーズ3: 機能強化 | ⏳ 未着手 | 0% |
-| フェーズ4: AI機能 | ⏳ 未着手 | 0% |
+| フェーズ | 状態 | 説明 |
+|---------|------|------|
+| フェーズ1: 認証連携 | ✅ 完了 | Supabase Auth |
+| フェーズ2: DB連携 | ✅ 完了 | CRUD操作 |
+| フェーズ3: 機能強化 | ✅ 完了 | カテゴリー管理、エクスポート |
+| フェーズ4: AI入力 | ✅ 完了 | 自然言語パース |
+| フェーズ5: AI拡張 | ✅ 完了 | アドバイス、予測、チャット |
+| フェーズ6: サブスク改善 | ✅ 完了 | Free/Pro差別化 |
 
 ---
 
@@ -49,27 +51,61 @@ npm run lint
 - `contexts/AuthContext.tsx` - 認証状態管理
 - `middleware.ts` - ルート保護
 
-### UI関連
+### 画面
 - `app/page.tsx` - ダッシュボード
 - `app/settings/page.tsx` - 設定画面
 - `app/analytics/page.tsx` - アナリティクス
 
-### データ関連
+### API
+- `app/api/ai/parse/route.ts` - AI支出パース
+- `app/api/ai/advice/route.ts` - AIアドバイス生成
+- `app/api/ai/chat/route.ts` - チャット応答
+- `app/api/ai/challenge/route.ts` - 節約チャレンジ
+
+### データベース
 - `lib/supabase.ts` - Supabaseクライアント
-- `lib/mock-data.ts` - モックデータ
-- `types/database.ts` - 型定義
+- `lib/api/profiles.ts` - プロフィールAPI
+- `lib/api/categories.ts` - カテゴリーAPI
+- `lib/api/transactions.ts` - トランザクションAPI
+
+### コンポーネント
+- `components/dashboard/` - ダッシュボード（予測、チャレンジ）
+- `components/analytics/` - アナリティクス（チャート、アドバイス）
+- `components/chat/AIChatWidget.tsx` - チャットウィジェット
+- `components/input/` - 入力フォーム（AI入力、手動入力）
 
 ---
 
-## ⚠️ 既知の問題
+## 💳 サブスクリプション機能
 
-1. Next.js 16で `middleware` が非推奨警告（`proxy`に移行推奨）
-2. モックデータからSupabaseへの移行が未完了
+| 機能 | Free | Pro |
+|------|:----:|:---:|
+| 基本ダッシュボード | ✅ | ✅ |
+| 支出登録 | ✅ | ✅ |
+| 月別貯蓄グラフ | ✅ | ✅ |
+| 全体目標サマリー | ✅ | ✅ |
+| カテゴリー別分析 | 🔒 | ✅ |
+| 年間集計 | 🔒 | ✅ |
+| AI入力 | 🔒 | ✅ |
+| AIアドバイス | 🔒 | ✅ |
+| チャットアシスタント | 🔒 | ✅ |
+| 節約チャレンジ | 🔒 | ✅ |
 
 ---
 
-## 📝 次のアクション
+## 🔧 環境変数
 
-1. [ ] ログアウトボタンをヘッダーに追加
-2. [ ] 認証フローの動作確認
-3. [ ] フェーズ2（DB連携）に着手
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_api_key
+```
+
+---
+
+## 📝 今後の候補
+
+- レシート読み取り（Vision API）
+- PWA対応
+- Stripe決済連携
+- リアルタイム同期

@@ -22,24 +22,24 @@ export function BudgetProgress({ summary }: BudgetProgressProps) {
     };
 
     return (
-        <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-            <h2 className="mb-6 text-lg font-semibold text-white">今月の予算概要</h2>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-6 text-lg font-semibold text-slate-900">今月の予算概要</h2>
 
             {/* Total Income */}
             <div className="mb-6">
                 <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">総収入</span>
-                    <span className="text-xl font-bold text-white">
+                    <span className="text-slate-500">総収入</span>
+                    <span className="text-xl font-bold text-slate-900">
                         {formatCurrency(summary.total_income)}
                     </span>
                 </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="relative mb-6 h-8 overflow-hidden rounded-full bg-slate-700/50">
+            <div className="relative mb-6 h-8 overflow-hidden rounded-full bg-slate-100">
                 {/* Fixed Costs */}
                 <motion.div
-                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-600 to-red-500"
+                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-rose-500 to-rose-400"
                     initial={{ width: 0 }}
                     animate={{ width: `${fixedPercentage}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
@@ -53,7 +53,7 @@ export function BudgetProgress({ summary }: BudgetProgressProps) {
                 />
                 {/* Remaining */}
                 <motion.div
-                    className="absolute top-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                    className="absolute top-0 h-full bg-gradient-to-r from-emerald-500 to-teal-400"
                     initial={{ width: 0, left: `${fixedPercentage + spentPercentage}%` }}
                     animate={{
                         width: `${Math.max(0, remainingPercentage)}%`,
@@ -65,15 +65,15 @@ export function BudgetProgress({ summary }: BudgetProgressProps) {
 
             {/* Legend */}
             <div className="grid grid-cols-3 gap-4">
-                <div className="rounded-xl bg-slate-800/50 p-3">
+                <div className="rounded-xl bg-rose-50 p-3 border border-rose-100">
                     <div className="mb-2 flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20">
-                            <Lock className="h-3 w-3 text-red-400" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-100">
+                            <Lock className="h-3 w-3 text-rose-600" />
                         </div>
-                        <span className="text-xs text-slate-400">固定費</span>
+                        <span className="text-xs text-slate-600">固定費</span>
                     </div>
                     <motion.p
-                        className="text-lg font-bold text-red-400"
+                        className="text-lg font-bold text-rose-600"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
@@ -82,15 +82,15 @@ export function BudgetProgress({ summary }: BudgetProgressProps) {
                     </motion.p>
                 </div>
 
-                <div className="rounded-xl bg-slate-800/50 p-3">
+                <div className="rounded-xl bg-amber-50 p-3 border border-amber-100">
                     <div className="mb-2 flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20">
-                            <Wallet className="h-3 w-3 text-amber-400" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100">
+                            <Wallet className="h-3 w-3 text-amber-600" />
                         </div>
-                        <span className="text-xs text-slate-400">使用済み</span>
+                        <span className="text-xs text-slate-600">使用済み</span>
                     </div>
                     <motion.p
-                        className="text-lg font-bold text-amber-400"
+                        className="text-lg font-bold text-amber-600"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
@@ -99,15 +99,15 @@ export function BudgetProgress({ summary }: BudgetProgressProps) {
                     </motion.p>
                 </div>
 
-                <div className="rounded-xl bg-slate-800/50 p-3">
+                <div className="rounded-xl bg-emerald-50 p-3 border border-emerald-100">
                     <div className="mb-2 flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
-                            <PiggyBank className="h-3 w-3 text-emerald-400" />
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100">
+                            <PiggyBank className="h-3 w-3 text-emerald-600" />
                         </div>
-                        <span className="text-xs text-slate-400">残り</span>
+                        <span className="text-xs text-slate-600">残り</span>
                     </div>
                     <motion.p
-                        className={`text-lg font-bold ${summary.remaining >= 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                        className={`text-lg font-bold ${summary.remaining >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.9 }}

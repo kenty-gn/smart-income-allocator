@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Crown, Palette, Trash2, Plus, Loader2, Pencil, DollarSign, CalendarDays } from 'lucide-react';
+import { Settings as SettingsIcon, Crown, Palette, Trash2, Plus, Loader2, Pencil, DollarSign, CalendarDays, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,10 +24,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCategories } from '@/hooks/useCategories';
 import { Category, CategoryType } from '@/types/database';
 import { updateProfile } from '@/lib/api/profiles';
+import { useTransactions } from '@/hooks/useTransactions';
+import { exportTransactionsToCSV, exportCategoriesToCSV } from '@/lib/export-csv';
 
 export default function SettingsPage() {
     const { user, profile, isPro: initialIsPro, refreshProfile } = useAuth();
     const { categories, isLoading, addCategory, editCategory, removeCategory } = useCategories();
+    const { transactions } = useTransactions();
 
     // ローカルステート
     const [isPro, setIsPro] = useState(initialIsPro);
@@ -49,19 +52,34 @@ export default function SettingsPage() {
         type: 'variable' as CategoryType,
         target_amount: '',
         target_percentage: '',
-        color: '#6366f1',
+        color: '#10b981',
     });
+
+    const [isTogglingPlan, setIsTogglingPlan] = useState(false);
 
     // profileからの初期値設定
     useEffect(() => {
         if (profile) {
             setTargetIncome(profile.target_income?.toString() || '300000');
             setSalaryDay(profile.salary_day?.toString() || '25');
+            setIsPro(profile.subscription_tier === 'pro');
         }
     }, [profile]);
 
-    const toggleSubscription = () => {
-        setIsPro((prev) => !prev);
+    const toggleSubscription = async () => {
+        if (!user) return;
+
+        try {
+            setIsTogglingPlan(true);
+            const newTier = isPro ? 'free' : 'pro';
+            await updateProfile(user.id, { subscription_tier: newTier });
+            await refreshProfile();
+            setIsPro(!isPro);
+        } catch (error) {
+            console.error('Error toggling subscription:', error);
+        } finally {
+            setIsTogglingPlan(false);
+        }
     };
 
     const handleSaveIncomeSettings = async () => {
@@ -98,7 +116,7 @@ export default function SettingsPage() {
                 type: 'variable',
                 target_amount: '',
                 target_percentage: '',
-                color: '#6366f1',
+                color: '#10b981',
             });
             setIsAddDialogOpen(false);
         } catch (error) {
@@ -145,8 +163,8 @@ export default function SettingsPage() {
     };
 
     const colorOptions = [
-        '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
-        '#f59e0b', '#10b981', '#14b8a6', '#3b82f6',
+        '#10b981', '#14b8a6', '#06b6d4', '#3b82f6',
+        '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b',
     ];
 
     const salaryDayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -157,7 +175,7 @@ export default function SettingsPage() {
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
             </div>
         );
     }
@@ -170,12 +188,12 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-3"
             >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 shadow-lg shadow-slate-500/25">
                     <SettingsIcon className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">設定</h1>
-                    <p className="text-sm text-slate-400">カテゴリーとプランを管理</p>
+                    <h1 className="text-2xl font-bold text-slate-900">設定</h1>
+                    <p className="text-sm text-slate-500">カテゴリーとプランを管理</p>
                 </div>
             </motion.div>
 
@@ -183,40 +201,40 @@ export default function SettingsPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6"
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
                 <div className="mb-4 flex items-center gap-3">
-                    <DollarSign className="h-5 w-5 text-emerald-400" />
-                    <h2 className="text-lg font-semibold text-white">収入設定</h2>
+                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                    <h2 className="text-lg font-semibold text-slate-900">収入設定</h2>
                 </div>
 
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label className="text-slate-400">目標月収</Label>
+                        <Label className="text-slate-600">目標月収</Label>
                         <div className="flex gap-2">
                             <Input
                                 type="number"
                                 value={targetIncome}
                                 onChange={(e) => setTargetIncome(e.target.value)}
                                 placeholder="300000"
-                                className="border-slate-700 bg-slate-800/50 text-white"
+                                className="border-slate-200 bg-white text-slate-900"
                             />
-                            <span className="flex items-center text-slate-400">円</span>
+                            <span className="flex items-center text-slate-500">円</span>
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4 text-slate-400" />
-                            <Label className="text-slate-400">給料日</Label>
+                            <CalendarDays className="h-4 w-4 text-slate-500" />
+                            <Label className="text-slate-600">給料日</Label>
                         </div>
                         <Select value={salaryDay} onValueChange={setSalaryDay}>
-                            <SelectTrigger className="border-slate-700 bg-slate-800/50 text-white">
+                            <SelectTrigger className="border-slate-200 bg-white text-slate-900">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="border-slate-700 bg-slate-800 max-h-48">
+                            <SelectContent className="border-slate-200 bg-white max-h-48">
                                 {salaryDayOptions.map((day) => (
-                                    <SelectItem key={day} value={day.toString()} className="text-white">
+                                    <SelectItem key={day} value={day.toString()} className="text-slate-900">
                                         {day}日
                                     </SelectItem>
                                 ))}
@@ -246,37 +264,45 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6"
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
                 <div className="mb-4 flex items-center gap-3">
-                    <Crown className={`h-5 w-5 ${isPro ? 'text-amber-400' : 'text-slate-500'}`} />
-                    <h2 className="text-lg font-semibold text-white">サブスクリプション</h2>
+                    <Crown className={`h-5 w-5 ${isPro ? 'text-amber-500' : 'text-slate-400'}`} />
+                    <h2 className="text-lg font-semibold text-slate-900">サブスクリプション</h2>
                 </div>
 
-                <div className="flex items-center justify-between rounded-xl bg-slate-800/50 p-4">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 p-4">
                     <div>
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-slate-900">
                             現在のプラン: {isPro ? 'Pro' : 'Free'}
                         </p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-slate-500">
                             {isPro
                                 ? 'すべての機能が利用可能です'
-                                : 'AI入力と高度な分析がロックされています'}
+                                : 'カテゴリー別分析・年間集計・AI入力がロックされています'}
                         </p>
                     </div>
                     <Button
                         onClick={toggleSubscription}
+                        disabled={isTogglingPlan}
                         className={
                             isPro
-                                ? 'border-slate-600 bg-slate-700 hover:bg-slate-600'
-                                : 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 hover:from-amber-500 hover:to-orange-600'
+                                ? 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600'
                         }
                     >
-                        {isPro ? 'Freeに戻す' : 'Proにアップグレード'}
+                        {isTogglingPlan ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                変更中...
+                            </>
+                        ) : (
+                            isPro ? 'Freeに戻す' : 'Proにアップグレード'
+                        )}
                     </Button>
                 </div>
 
-                <p className="mt-3 text-xs text-slate-500">
+                <p className="mt-3 text-xs text-slate-400">
                     ※ テスト用のトグルです。実際のアプリでは決済処理が入ります。
                 </p>
             </motion.div>
@@ -286,61 +312,61 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6"
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
                 <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Palette className="h-5 w-5 text-indigo-400" />
-                        <h2 className="text-lg font-semibold text-white">カテゴリー管理</h2>
+                        <Palette className="h-5 w-5 text-indigo-600" />
+                        <h2 className="text-lg font-semibold text-slate-900">カテゴリー管理</h2>
                     </div>
                     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
                                 size="sm"
-                                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                             >
                                 <Plus className="mr-2 h-4 w-4" />
                                 追加
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="border-slate-700 bg-slate-900">
+                        <DialogContent className="border-slate-200 bg-white">
                             <DialogHeader>
-                                <DialogTitle className="text-white">カテゴリーを追加</DialogTitle>
+                                <DialogTitle className="text-slate-900">カテゴリーを追加</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-slate-400">カテゴリー名</Label>
+                                    <Label className="text-slate-600">カテゴリー名</Label>
                                     <Input
                                         value={newCategory.name}
                                         onChange={(e) =>
                                             setNewCategory((prev) => ({ ...prev, name: e.target.value }))
                                         }
                                         placeholder="例: 外食"
-                                        className="border-slate-700 bg-slate-800/50 text-white"
+                                        className="border-slate-200 bg-white text-slate-900"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="text-slate-400">タイプ</Label>
+                                    <Label className="text-slate-600">タイプ</Label>
                                     <Select
                                         value={newCategory.type}
                                         onValueChange={(value: CategoryType) =>
                                             setNewCategory((prev) => ({ ...prev, type: value }))
                                         }
                                     >
-                                        <SelectTrigger className="border-slate-700 bg-slate-800/50 text-white">
+                                        <SelectTrigger className="border-slate-200 bg-white text-slate-900">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="border-slate-700 bg-slate-800">
-                                            <SelectItem value="fixed" className="text-white">固定費</SelectItem>
-                                            <SelectItem value="variable" className="text-white">変動費</SelectItem>
+                                        <SelectContent className="border-slate-200 bg-white">
+                                            <SelectItem value="fixed" className="text-slate-900">固定費</SelectItem>
+                                            <SelectItem value="variable" className="text-slate-900">変動費</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 {newCategory.type === 'fixed' ? (
                                     <div className="space-y-2">
-                                        <Label className="text-slate-400">目標金額 (¥)</Label>
+                                        <Label className="text-slate-600">目標金額 (¥)</Label>
                                         <Input
                                             type="number"
                                             value={newCategory.target_amount}
@@ -351,12 +377,12 @@ export default function SettingsPage() {
                                                 }))
                                             }
                                             placeholder="10000"
-                                            className="border-slate-700 bg-slate-800/50 text-white"
+                                            className="border-slate-200 bg-white text-slate-900"
                                         />
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <Label className="text-slate-400">目標パーセンテージ (%)</Label>
+                                        <Label className="text-slate-600">目標パーセンテージ (%)</Label>
                                         <Input
                                             type="number"
                                             value={newCategory.target_percentage}
@@ -367,13 +393,13 @@ export default function SettingsPage() {
                                                 }))
                                             }
                                             placeholder="20"
-                                            className="border-slate-700 bg-slate-800/50 text-white"
+                                            className="border-slate-200 bg-white text-slate-900"
                                         />
                                     </div>
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label className="text-slate-400">カラー</Label>
+                                    <Label className="text-slate-600">カラー</Label>
                                     <div className="flex gap-2">
                                         {colorOptions.map((color) => (
                                             <button
@@ -382,7 +408,7 @@ export default function SettingsPage() {
                                                     setNewCategory((prev) => ({ ...prev, color }))
                                                 }
                                                 className={`h-8 w-8 rounded-full transition-transform ${newCategory.color === color
-                                                    ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900'
+                                                    ? 'scale-110 ring-2 ring-slate-900 ring-offset-2 ring-offset-white'
                                                     : 'hover:scale-105'
                                                     }`}
                                                 style={{ backgroundColor: color }}
@@ -394,7 +420,7 @@ export default function SettingsPage() {
                                 <Button
                                     onClick={handleAddCategory}
                                     disabled={!newCategory.name || isAdding}
-                                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                                 >
                                     {isAdding ? (
                                         <>
@@ -412,26 +438,26 @@ export default function SettingsPage() {
 
                 {/* Edit Category Dialog */}
                 <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogContent className="border-slate-700 bg-slate-900">
+                    <DialogContent className="border-slate-200 bg-white">
                         <DialogHeader>
-                            <DialogTitle className="text-white">カテゴリーを編集</DialogTitle>
+                            <DialogTitle className="text-slate-900">カテゴリーを編集</DialogTitle>
                         </DialogHeader>
                         {editingCategory && (
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-slate-400">カテゴリー名</Label>
+                                    <Label className="text-slate-600">カテゴリー名</Label>
                                     <Input
                                         value={editingCategory.name}
                                         onChange={(e) =>
                                             setEditingCategory((prev) => prev ? { ...prev, name: e.target.value } : null)
                                         }
-                                        className="border-slate-700 bg-slate-800/50 text-white"
+                                        className="border-slate-200 bg-white text-slate-900"
                                     />
                                 </div>
 
                                 {editingCategory.type === 'fixed' ? (
                                     <div className="space-y-2">
-                                        <Label className="text-slate-400">目標金額 (¥)</Label>
+                                        <Label className="text-slate-600">目標金額 (¥)</Label>
                                         <Input
                                             type="number"
                                             value={editingCategory.target_amount || ''}
@@ -441,12 +467,12 @@ export default function SettingsPage() {
                                                     target_amount: parseFloat(e.target.value) || null,
                                                 } : null)
                                             }
-                                            className="border-slate-700 bg-slate-800/50 text-white"
+                                            className="border-slate-200 bg-white text-slate-900"
                                         />
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        <Label className="text-slate-400">目標パーセンテージ (%)</Label>
+                                        <Label className="text-slate-600">目標パーセンテージ (%)</Label>
                                         <Input
                                             type="number"
                                             value={editingCategory.target_percentage || ''}
@@ -456,13 +482,13 @@ export default function SettingsPage() {
                                                     target_percentage: parseFloat(e.target.value) || null,
                                                 } : null)
                                             }
-                                            className="border-slate-700 bg-slate-800/50 text-white"
+                                            className="border-slate-200 bg-white text-slate-900"
                                         />
                                     </div>
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label className="text-slate-400">カラー</Label>
+                                    <Label className="text-slate-600">カラー</Label>
                                     <div className="flex gap-2">
                                         {colorOptions.map((color) => (
                                             <button
@@ -471,7 +497,7 @@ export default function SettingsPage() {
                                                     setEditingCategory((prev) => prev ? { ...prev, color } : null)
                                                 }
                                                 className={`h-8 w-8 rounded-full transition-transform ${editingCategory.color === color
-                                                    ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900'
+                                                    ? 'scale-110 ring-2 ring-slate-900 ring-offset-2 ring-offset-white'
                                                     : 'hover:scale-105'
                                                     }`}
                                                 style={{ backgroundColor: color }}
@@ -483,7 +509,7 @@ export default function SettingsPage() {
                                 <Button
                                     onClick={handleEditCategory}
                                     disabled={!editingCategory.name || isEditing}
-                                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                                 >
                                     {isEditing ? (
                                         <>
@@ -501,23 +527,23 @@ export default function SettingsPage() {
 
                 {/* Fixed Categories */}
                 <div className="mb-4">
-                    <h3 className="mb-2 text-sm font-medium text-slate-400">固定費</h3>
+                    <h3 className="mb-2 text-sm font-medium text-slate-600">固定費</h3>
                     <div className="space-y-2">
                         {fixedCategories.length === 0 ? (
-                            <p className="text-sm text-slate-500">固定費カテゴリーがありません</p>
+                            <p className="text-sm text-slate-400">固定費カテゴリーがありません</p>
                         ) : (
                             fixedCategories.map((category) => (
                                 <div
                                     key={category.id}
-                                    className="flex items-center justify-between rounded-lg bg-slate-800/50 p-3"
+                                    className="flex items-center justify-between rounded-lg bg-slate-50 border border-slate-100 p-3"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="h-4 w-4 rounded-full"
                                             style={{ backgroundColor: category.color }}
                                         />
-                                        <span className="text-white">{category.name}</span>
-                                        <span className="text-sm text-slate-500">
+                                        <span className="text-slate-900">{category.name}</span>
+                                        <span className="text-sm text-slate-400">
                                             ¥{(category.target_amount || 0).toLocaleString()}
                                         </span>
                                     </div>
@@ -526,7 +552,7 @@ export default function SettingsPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => openEditDialog(category)}
-                                            className="text-slate-500 hover:text-indigo-400"
+                                            className="text-slate-400 hover:text-indigo-600"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>
@@ -535,7 +561,7 @@ export default function SettingsPage() {
                                             size="sm"
                                             onClick={() => handleDeleteCategory(category.id)}
                                             disabled={deletingId === category.id}
-                                            className="text-slate-500 hover:text-red-400"
+                                            className="text-slate-400 hover:text-rose-600"
                                         >
                                             {deletingId === category.id ? (
                                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -552,23 +578,23 @@ export default function SettingsPage() {
 
                 {/* Variable Categories */}
                 <div>
-                    <h3 className="mb-2 text-sm font-medium text-slate-400">変動費</h3>
+                    <h3 className="mb-2 text-sm font-medium text-slate-600">変動費</h3>
                     <div className="space-y-2">
                         {variableCategories.length === 0 ? (
-                            <p className="text-sm text-slate-500">変動費カテゴリーがありません</p>
+                            <p className="text-sm text-slate-400">変動費カテゴリーがありません</p>
                         ) : (
                             variableCategories.map((category) => (
                                 <div
                                     key={category.id}
-                                    className="flex items-center justify-between rounded-lg bg-slate-800/50 p-3"
+                                    className="flex items-center justify-between rounded-lg bg-slate-50 border border-slate-100 p-3"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="h-4 w-4 rounded-full"
                                             style={{ backgroundColor: category.color }}
                                         />
-                                        <span className="text-white">{category.name}</span>
-                                        <span className="text-sm text-slate-500">
+                                        <span className="text-slate-900">{category.name}</span>
+                                        <span className="text-sm text-slate-400">
                                             {category.target_percentage}%
                                         </span>
                                     </div>
@@ -577,7 +603,7 @@ export default function SettingsPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => openEditDialog(category)}
-                                            className="text-slate-500 hover:text-indigo-400"
+                                            className="text-slate-400 hover:text-indigo-600"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>
@@ -586,7 +612,7 @@ export default function SettingsPage() {
                                             size="sm"
                                             onClick={() => handleDeleteCategory(category.id)}
                                             disabled={deletingId === category.id}
-                                            className="text-slate-500 hover:text-red-400"
+                                            className="text-slate-400 hover:text-rose-600"
                                         >
                                             {deletingId === category.id ? (
                                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -599,6 +625,49 @@ export default function SettingsPage() {
                             ))
                         )}
                     </div>
+                </div>
+            </motion.div>
+
+            {/* Data Export */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            >
+                <div className="mb-4 flex items-center gap-3">
+                    <Download className="h-5 w-5 text-teal-600" />
+                    <h2 className="text-lg font-semibold text-slate-900">データエクスポート</h2>
+                </div>
+
+                <p className="mb-4 text-sm text-slate-500">
+                    データをCSV形式でダウンロードできます。Excelなどで開くことができます。
+                </p>
+
+                <div className="space-y-3">
+                    <Button
+                        onClick={() => exportTransactionsToCSV(transactions, categories)}
+                        variant="outline"
+                        className="w-full justify-start border-slate-200 text-slate-700 hover:bg-slate-50"
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        トランザクション履歴をエクスポート
+                        <span className="ml-auto text-xs text-slate-400">
+                            {transactions.length}件
+                        </span>
+                    </Button>
+
+                    <Button
+                        onClick={() => exportCategoriesToCSV(categories)}
+                        variant="outline"
+                        className="w-full justify-start border-slate-200 text-slate-700 hover:bg-slate-50"
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        カテゴリー一覧をエクスポート
+                        <span className="ml-auto text-xs text-slate-400">
+                            {categories.length}件
+                        </span>
+                    </Button>
                 </div>
             </motion.div>
         </div>

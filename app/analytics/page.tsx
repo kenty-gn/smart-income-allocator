@@ -3,14 +3,14 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Loader2 } from 'lucide-react';
-import { SavingsChart, TargetGap, AdviceCard } from '@/components/analytics';
+import { SavingsChart, TargetGap, AdviceCard, YearlySummary } from '@/components/analytics';
 import { useCategories } from '@/hooks/useCategories';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { CategoryWithSpend, MonthlyStats } from '@/types/database';
 
 export default function AnalyticsPage() {
-    const { profile } = useAuth();
+    const { profile, isPro } = useAuth();
     const { categories, isLoading: categoriesLoading } = useCategories();
     const { transactions, isLoading: transactionsLoading } = useTransactions();
 
@@ -75,6 +75,10 @@ export default function AnalyticsPage() {
         const now = new Date();
         const stats: MonthlyStats[] = [];
 
+        // サンプルデータ（過去5ヶ月分）
+        const sampleMultipliers = [0.92, 0.88, 0.95, 0.82, 0.98];
+        const expenseRatios = [0.75, 0.85, 0.72, 0.88, 0.78];
+
         for (let i = 5; i >= 0; i--) {
             const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -95,11 +99,13 @@ export default function AnalyticsPage() {
                     surplus: Math.max(income, targetIncome) - expense,
                 });
             } else {
-                // 過去月はサンプルデータ（固定値）
-                const sampleMultipliers = [0.92, 0.88, 0.95, 0.82, 0.98];
-                const expenseRatios = [0.75, 0.85, 0.72, 0.88, 0.78];
-                const income = Math.round(targetIncome * sampleMultipliers[5 - i - 1]);
-                const expense = Math.round(income * expenseRatios[5 - i - 1]);
+                // 過去月はサンプルデータ（i=5が最古、i=1が直近）
+                // インデックス: i=5→0, i=4→1, i=3→2, i=2→3, i=1→4
+                const idx = 5 - i;
+                const multiplier = sampleMultipliers[idx] ?? 0.9;
+                const expenseRatio = expenseRatios[idx] ?? 0.8;
+                const income = Math.round(targetIncome * multiplier);
+                const expense = Math.round(income * expenseRatio);
                 stats.push({
                     month: monthStr,
                     income,
@@ -117,7 +123,7 @@ export default function AnalyticsPage() {
     if (categoriesLoading || transactionsLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
             </div>
         );
     }
@@ -130,12 +136,12 @@ export default function AnalyticsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-3"
             >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
                     <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">アナリティクス</h1>
-                    <p className="text-sm text-slate-400">支出の傾向を分析</p>
+                    <h1 className="text-2xl font-bold text-slate-900">アナリティクス</h1>
+                    <p className="text-sm text-slate-500">支出の傾向を分析</p>
                 </div>
             </motion.div>
 
@@ -146,10 +152,24 @@ export default function AnalyticsPage() {
             <TargetGap
                 categories={categoriesWithProgress}
                 disposableIncome={budgetSummary.disposable_income}
+                isPro={isPro}
             />
 
-            {/* Advice Card */}
-            <AdviceCard surplus={currentSurplus} />
+            {/* Yearly Summary - Pro Feature */}
+            <YearlySummary
+                transactions={transactions}
+                targetIncome={targetIncome}
+                isPro={isPro}
+            />
+
+            {/* Advice Card - AI Powered for Pro */}
+            <AdviceCard
+                surplus={currentSurplus}
+                transactions={transactions}
+                categories={categories}
+                targetIncome={targetIncome}
+                isPro={isPro}
+            />
         </div>
     );
 }

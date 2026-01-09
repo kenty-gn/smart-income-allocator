@@ -18,10 +18,10 @@ export function CategoryCard({ category, disposableIncome, index }: CategoryCard
 
     const isOverBudget = category.progress > 100;
     const progressColor = isOverBudget
-        ? 'from-red-500 to-red-600'
+        ? 'from-rose-500 to-rose-400'
         : category.progress > 80
-            ? 'from-amber-500 to-orange-500'
-            : 'from-indigo-500 to-purple-500';
+            ? 'from-amber-500 to-orange-400'
+            : 'from-emerald-500 to-teal-400';
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('ja-JP', {
@@ -36,17 +36,17 @@ export function CategoryCard({ category, disposableIncome, index }: CategoryCard
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 }}
-            className="group rounded-xl border border-slate-800 bg-gradient-to-br from-slate-900/80 to-slate-800/50 p-4 transition-all hover:border-slate-700 hover:shadow-lg hover:shadow-indigo-500/5"
+            className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
         >
             <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                     <div
                         className="h-10 w-10 rounded-lg transition-transform group-hover:scale-110"
-                        style={{ backgroundColor: `${category.color}20` }}
+                        style={{ backgroundColor: `${category.color}15` }}
                     >
                         <div
                             className="flex h-full w-full items-center justify-center rounded-lg"
-                            style={{ backgroundColor: `${category.color}30` }}
+                            style={{ backgroundColor: `${category.color}25` }}
                         >
                             <div
                                 className="h-4 w-4 rounded-full"
@@ -55,7 +55,7 @@ export function CategoryCard({ category, disposableIncome, index }: CategoryCard
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-medium text-white">{category.name}</h3>
+                        <h3 className="font-medium text-slate-900">{category.name}</h3>
                         <span className="text-xs text-slate-500">
                             {category.type === 'fixed' ? '固定費' : '変動費'}
                         </span>
@@ -63,14 +63,14 @@ export function CategoryCard({ category, disposableIncome, index }: CategoryCard
                 </div>
                 <div className={cn(
                     'rounded-full px-2 py-0.5 text-xs font-medium',
-                    isOverBudget ? 'bg-red-500/20 text-red-400' : 'bg-slate-800 text-slate-400'
+                    isOverBudget ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'
                 )}>
                     {Math.round(category.progress)}%
                 </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-700/50">
+            <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-100">
                 <motion.div
                     className={cn('h-full rounded-full bg-gradient-to-r', progressColor)}
                     initial={{ width: 0 }}
@@ -81,10 +81,10 @@ export function CategoryCard({ category, disposableIncome, index }: CategoryCard
 
             {/* Amounts */}
             <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">
+                <span className="text-slate-700 font-medium">
                     {formatCurrency(category.current_spend)}
                 </span>
-                <span className="text-slate-500">/ {formatCurrency(target)}</span>
+                <span className="text-slate-400">/ {formatCurrency(target)}</span>
             </div>
         </motion.div>
     );

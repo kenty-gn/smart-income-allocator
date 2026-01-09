@@ -59,32 +59,32 @@ export function ManualInput({ categories, onTransactionAdd }: ManualInputProps) 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6"
+            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
             <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700">
-                    <Wallet className="h-4 w-4 text-slate-300" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
+                    <Wallet className="h-4 w-4 text-slate-600" />
                 </div>
-                <h3 className="font-semibold text-white">手動入力</h3>
+                <h3 className="font-semibold text-slate-900">手動入力</h3>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Category */}
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-slate-400">
+                    <Label className="flex items-center gap-2 text-slate-600">
                         <Tag className="h-4 w-4" />
                         カテゴリー
                     </Label>
                     <Select value={categoryId} onValueChange={setCategoryId}>
-                        <SelectTrigger className="border-slate-700 bg-slate-800/50 text-white">
+                        <SelectTrigger className="border-slate-200 bg-white text-slate-900">
                             <SelectValue placeholder="カテゴリーを選択" />
                         </SelectTrigger>
-                        <SelectContent className="border-slate-700 bg-slate-800">
+                        <SelectContent className="border-slate-200 bg-white">
                             {categories.map((cat) => (
                                 <SelectItem
                                     key={cat.id}
                                     value={cat.id}
-                                    className="text-white focus:bg-slate-700 focus:text-white"
+                                    className="text-slate-900 focus:bg-slate-100 focus:text-slate-900"
                                 >
                                     <div className="flex items-center gap-2">
                                         <div
@@ -101,7 +101,7 @@ export function ManualInput({ categories, onTransactionAdd }: ManualInputProps) 
 
                 {/* Amount */}
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-slate-400">
+                    <Label className="flex items-center gap-2 text-slate-600">
                         <span className="text-sm">¥</span>
                         金額
                     </Label>
@@ -110,13 +110,13 @@ export function ManualInput({ categories, onTransactionAdd }: ManualInputProps) 
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0"
-                        className="border-slate-700 bg-slate-800/50 text-white placeholder-slate-500"
+                        className="border-slate-200 bg-white text-slate-900 placeholder-slate-400"
                     />
                 </div>
 
                 {/* Date */}
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-slate-400">
+                    <Label className="flex items-center gap-2 text-slate-600">
                         <Calendar className="h-4 w-4" />
                         日付
                     </Label>
@@ -124,13 +124,13 @@ export function ManualInput({ categories, onTransactionAdd }: ManualInputProps) 
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="border-slate-700 bg-slate-800/50 text-white"
+                        className="border-slate-200 bg-white text-slate-900"
                     />
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2 text-slate-400">
+                    <Label className="flex items-center gap-2 text-slate-600">
                         <FileText className="h-4 w-4" />
                         メモ
                     </Label>
@@ -139,14 +139,14 @@ export function ManualInput({ categories, onTransactionAdd }: ManualInputProps) 
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="任意"
-                        className="border-slate-700 bg-slate-800/50 text-white placeholder-slate-500"
+                        className="border-slate-200 bg-white text-slate-900 placeholder-slate-400"
                     />
                 </div>
 
                 <Button
                     type="submit"
                     disabled={!categoryId || !amount || isSubmitting}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                 >
                     <Plus className="mr-2 h-4 w-4" />
                     {isSubmitting ? '追加中...' : '支出を追加'}

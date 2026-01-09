@@ -1,15 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Lock, Crown } from 'lucide-react';
 import { CategoryWithSpend } from '@/types/database';
+import { Button } from '@/components/ui/button';
 
 interface TargetGapProps {
     categories: CategoryWithSpend[];
     disposableIncome: number;
+    isPro?: boolean;
 }
 
-export function TargetGap({ categories, disposableIncome }: TargetGapProps) {
+export function TargetGap({ categories, disposableIncome, isPro = false }: TargetGapProps) {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('ja-JP', {
             style: 'currency',
@@ -44,73 +46,96 @@ export function TargetGap({ categories, disposableIncome }: TargetGapProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6"
+            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
             <div className="mb-6 flex items-center gap-2">
-                <Target className="h-5 w-5 text-indigo-400" />
-                <h3 className="text-lg font-semibold text-white">目標 vs 実績</h3>
+                <Target className="h-5 w-5 text-indigo-600" />
+                <h3 className="text-lg font-semibold text-slate-900">目標 vs 実績</h3>
             </div>
 
-            {/* Summary Cards */}
+            {/* Summary Cards - Available for all users */}
             <div className="mb-6 grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-emerald-500/10 p-4">
+                <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-4">
                     <div className="mb-2 flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-emerald-400" />
-                        <span className="text-sm text-emerald-400">節約中</span>
+                        <TrendingUp className="h-4 w-4 text-emerald-600" />
+                        <span className="text-sm text-emerald-700">節約中</span>
                     </div>
-                    <p className="text-xl font-bold text-emerald-400">
+                    <p className="text-xl font-bold text-emerald-600">
                         {formatCurrency(totalSavings)}
                     </p>
                     <p className="text-xs text-slate-500">{underBudget.length}カテゴリー</p>
                 </div>
-                <div className="rounded-xl bg-red-500/10 p-4">
+                <div className="rounded-xl bg-rose-50 border border-rose-100 p-4">
                     <div className="mb-2 flex items-center gap-2">
-                        <TrendingDown className="h-4 w-4 text-red-400" />
-                        <span className="text-sm text-red-400">超過</span>
+                        <TrendingDown className="h-4 w-4 text-rose-600" />
+                        <span className="text-sm text-rose-700">超過</span>
                     </div>
-                    <p className="text-xl font-bold text-red-400">
+                    <p className="text-xl font-bold text-rose-600">
                         {formatCurrency(totalOverspend)}
                     </p>
                     <p className="text-xs text-slate-500">{overBudget.length}カテゴリー</p>
                 </div>
             </div>
 
-            {/* Category List */}
-            <div className="space-y-3">
-                {gaps
-                    .sort((a, b) => a.gap - b.gap)
-                    .map((cat, index) => (
-                        <motion.div
-                            key={cat.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center justify-between rounded-lg bg-slate-800/50 p-3"
+            {/* Category List - Pro Only */}
+            {isPro ? (
+                <div className="space-y-3">
+                    <p className="text-sm font-medium text-slate-600 mb-2">カテゴリー別詳細</p>
+                    {gaps
+                        .sort((a, b) => a.gap - b.gap)
+                        .map((cat, index) => (
+                            <motion.div
+                                key={cat.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="flex items-center justify-between rounded-lg bg-slate-50 border border-slate-100 p-3"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="h-3 w-3 rounded-full"
+                                        style={{ backgroundColor: cat.color }}
+                                    />
+                                    <span className="text-sm text-slate-900">{cat.name}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`text-sm font-medium ${cat.gap >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                                            }`}
+                                    >
+                                        {cat.gap >= 0 ? '+' : ''}
+                                        {formatCurrency(cat.gap)}
+                                    </span>
+                                    {cat.gap >= 0 ? (
+                                        <TrendingUp className="h-4 w-4 text-emerald-600" />
+                                    ) : (
+                                        <TrendingDown className="h-4 w-4 text-rose-600" />
+                                    )}
+                                </div>
+                            </motion.div>
+                        ))}
+                </div>
+            ) : (
+                <div className="relative rounded-xl bg-slate-50 border border-slate-200 p-6">
+                    <div className="flex flex-col items-center text-center">
+                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/25">
+                            <Lock className="h-6 w-6 text-white" />
+                        </div>
+                        <h4 className="mb-1 font-semibold text-slate-900">カテゴリー別詳細</h4>
+                        <p className="mb-3 text-sm text-slate-500">
+                            各カテゴリーの目標との差額を確認できます
+                        </p>
+                        <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600"
                         >
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="h-3 w-3 rounded-full"
-                                    style={{ backgroundColor: cat.color }}
-                                />
-                                <span className="text-sm text-white">{cat.name}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span
-                                    className={`text-sm font-medium ${cat.gap >= 0 ? 'text-emerald-400' : 'text-red-400'
-                                        }`}
-                                >
-                                    {cat.gap >= 0 ? '+' : ''}
-                                    {formatCurrency(cat.gap)}
-                                </span>
-                                {cat.gap >= 0 ? (
-                                    <TrendingUp className="h-4 w-4 text-emerald-400" />
-                                ) : (
-                                    <TrendingDown className="h-4 w-4 text-red-400" />
-                                )}
-                            </div>
-                        </motion.div>
-                    ))}
-            </div>
+                            <Crown className="mr-2 h-4 w-4" />
+                            Proにアップグレード
+                        </Button>
+                    </div>
+                </div>
+            )}
         </motion.div>
     );
 }
+
