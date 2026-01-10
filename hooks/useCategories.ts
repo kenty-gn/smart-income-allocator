@@ -11,6 +11,7 @@ import {
     deleteCategory,
     updateCategory,
 } from '@/lib/api/categories';
+import { subscribeToCategories, unsubscribe } from '@/lib/realtime';
 
 export function useCategories() {
     const { user, isLoading: authLoading } = useAuth();
@@ -63,6 +64,39 @@ export function useCategories() {
     useEffect(() => {
         fetchCategories();
     }, [fetchCategories]);
+
+    // リアルタイム購読
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = subscribeToCategories(user.id, {
+            onInsert: (newCategory) => {
+                setCategories((prev) => {
+                    // 重複チェック
+                    if (prev.some((c) => c.id === newCategory.id)) return prev;
+                    return [...prev, newCategory];
+                });
+            },
+            onUpdate: (updatedCategory) => {
+                setCategories((prev) =>
+                    prev.map((c) =>
+                        c.id === updatedCategory.id
+                            ? { ...c, ...updatedCategory }
+                            : c
+                    )
+                );
+            },
+            onDelete: (deletedCategory) => {
+                setCategories((prev) =>
+                    prev.filter((c) => c.id !== deletedCategory.id)
+                );
+            },
+        });
+
+        return () => {
+            unsubscribe(channel);
+        };
+    }, [user]);
 
     const addCategory = async (data: {
         name: string;

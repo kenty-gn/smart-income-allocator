@@ -63,11 +63,12 @@ contexts/
 └── AuthContext.tsx          # 認証状態管理
 
 hooks/
-├── useCategories.ts         # カテゴリーフック
-└── useTransactions.ts       # トランザクションフック
+├── useCategories.ts         # カテゴリーフック（リアルタイム対応）
+└── useTransactions.ts       # トランザクションフック（リアルタイム対応）
 
 lib/
 ├── supabase.ts              # Supabaseクライアント
+├── realtime.ts              # リアルタイム購読ユーティリティ
 ├── export-csv.ts            # CSVエクスポート
 ├── ai-parser.ts             # AIパーサークライアント
 └── api/
@@ -163,6 +164,36 @@ const proFeatures = [
   '節約チャレンジ',
 ];
 ```
+
+---
+
+## リアルタイム同期
+
+Supabase Realtimeを使用して、複数デバイス/タブ間でデータをリアルタイムに同期。
+
+### 対象テーブル
+- `transactions` - 支出/収入の追加・編集・削除
+- `categories` - カテゴリーの追加・編集・削除
+
+### 仕組み
+```typescript
+// lib/realtime.ts
+supabase
+  .channel(`transactions-${userId}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'transactions',
+    filter: `user_id=eq.${userId}`
+  }, callback)
+  .subscribe()
+```
+
+### 機能
+- INSERT: 新規レコードをリストに追加
+- UPDATE: 対象レコードを更新
+- DELETE: 対象レコードを削除
+- コンポーネントのアンマウント時に自動購読解除
 
 ---
 

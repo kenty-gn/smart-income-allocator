@@ -28,6 +28,7 @@ npm run lint
 | [TASK.md](./TASK.md) | 開発タスクリスト（チェックリスト形式） |
 | [SPECIFICATION.md](./SPECIFICATION.md) | 技術仕様・アーキテクチャ |
 | [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) | Supabaseセットアップ手順 |
+| [IOS_APP_PROPOSAL.md](./IOS_APP_PROPOSAL.md) | iOSアプリ開発提案書 |
 
 ---
 
@@ -41,6 +42,7 @@ npm run lint
 | フェーズ4: AI入力 | ✅ 完了 | 自然言語パース |
 | フェーズ5: AI拡張 | ✅ 完了 | アドバイス、予測、チャット |
 | フェーズ6: サブスク改善 | ✅ 完了 | Free/Pro差別化 |
+| フェーズ7: リアルタイム同期 | ✅ 完了 | マルチデバイス対応 |
 
 ---
 
@@ -106,6 +108,5 @@ OPENAI_API_KEY=your_openai_api_key
 ## 📝 今後の候補
 
 - レシート読み取り（Vision API）
-- PWA対応
 - Stripe決済連携
-- リアルタイム同期
+- iOSアプリ開発（React Native / Swift）

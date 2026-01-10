@@ -10,6 +10,7 @@ import {
     deleteTransaction,
     getMonthlyStats,
 } from '@/lib/api/transactions';
+import { subscribeToTransactions, unsubscribe } from '@/lib/realtime';
 
 interface TransactionWithCategory extends Transaction {
     categories?: {
@@ -60,6 +61,39 @@ export function useTransactions(options?: UseTransactionsOptions) {
     useEffect(() => {
         fetchTransactions();
     }, [fetchTransactions]);
+
+    // リアルタイム購読
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = subscribeToTransactions(user.id, {
+            onInsert: (newTransaction) => {
+                setTransactions((prev) => {
+                    // 重複チェック
+                    if (prev.some((t) => t.id === newTransaction.id)) return prev;
+                    return [newTransaction as TransactionWithCategory, ...prev];
+                });
+            },
+            onUpdate: (updatedTransaction) => {
+                setTransactions((prev) =>
+                    prev.map((t) =>
+                        t.id === updatedTransaction.id
+                            ? { ...t, ...updatedTransaction }
+                            : t
+                    )
+                );
+            },
+            onDelete: (deletedTransaction) => {
+                setTransactions((prev) =>
+                    prev.filter((t) => t.id !== deletedTransaction.id)
+                );
+            },
+        });
+
+        return () => {
+            unsubscribe(channel);
+        };
+    }, [user]);
 
     const addTransaction = async (data: {
         category_id?: string;
