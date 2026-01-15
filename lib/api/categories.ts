@@ -1,7 +1,30 @@
+/**
+ * categories.ts - カテゴリAPI
+ * 
+ * 【責務】
+ * - Supabaseとのデータ通信
+ * - カテゴリのCRUD操作
+ * - デフォルトカテゴリの初期化
+ * 
+ * 【設計方針】
+ * - 各関数は単一の責務を持つ
+ * - エラーは呼び出し元に伝播させる（ここではログのみ）
+ * - 戻り値は型安全なオブジェクト
+ */
+
 import { supabase } from '@/lib/supabase';
 import { Category, CategoryType } from '@/types/database';
 
+// ========================================
 // カテゴリ取得
+// ========================================
+
+/**
+ * ユーザーのカテゴリ一覧を取得
+ * 
+ * タイプ順（固定費→変動費）、名前順でソートして返す。
+ * ダッシュボードでの表示順序を統一するため。
+ */
 export async function getCategories(userId: string): Promise<Category[]> {
     const { data, error } = await supabase
         .from('categories')
@@ -18,7 +41,18 @@ export async function getCategories(userId: string): Promise<Category[]> {
     return data || [];
 }
 
+
+// ========================================
 // カテゴリ作成
+// ========================================
+
+/**
+ * 新規カテゴリを作成
+ * 
+ * @param data.type - 'fixed'(固定費) または 'variable'(変動費)
+ * @param data.target_amount - 固定費の場合の目標金額（例: 家賃 80,000円）
+ * @param data.target_percentage - 変動費の場合の目標割合（例: 食費 15%）
+ */
 export async function createCategory(data: {
     user_id: string;
     name: string;
@@ -41,8 +75,21 @@ export async function createCategory(data: {
     return category;
 }
 
-// デフォルトカテゴリ作成
+// ========================================
+// デフォルトカテゴリ
+// ========================================
+
+/**
+ * デフォルトカテゴリを一括作成
+ * 
+ * 新規ユーザーが初めてログインしたときに呼び出される。
+ * 一般的な支出カテゴリをプリセットし、すぐに使い始められるようにする。
+ * 
+ * 【固定費】家賃、水道光熱費、通信費、保険、サブスク
+ * 【変動費】食費(15%)、交通費(5%)、娯楽(10%)、日用品(5%)、その他(10%)
+ */
 export async function createDefaultCategories(userId: string): Promise<void> {
+    // カラーはTailwind CSSの色を使用し、グラフでの視認性を確保
     const defaultCategories = [
         // 固定費
         { user_id: userId, name: '家賃', type: 'fixed' as CategoryType, color: '#ef4444' },
@@ -68,7 +115,16 @@ export async function createDefaultCategories(userId: string): Promise<void> {
     }
 }
 
-// カテゴリ更新
+// ========================================
+// カテゴリ更新・削除
+// ========================================
+
+/**
+ * カテゴリ情報を更新
+ * 
+ * 名前、カラー、目標金額等を部分的に更新できる。
+ * idとuser_idはセキュリティのため変更不可。
+ */
 export async function updateCategory(
     id: string,
     data: Partial<Omit<Category, 'id' | 'user_id'>>
@@ -88,7 +144,12 @@ export async function updateCategory(
     return category;
 }
 
-// カテゴリ削除
+/**
+ * カテゴリを削除
+ * 
+ * 注意: このカテゴリに紐づく取引は残るが、
+ * カテゴリ名が表示されなくなる。
+ */
 export async function deleteCategory(id: string): Promise<void> {
     const { error } = await supabase
         .from('categories')
@@ -101,8 +162,18 @@ export async function deleteCategory(id: string): Promise<void> {
     }
 }
 
-// カテゴリの存在確認
+// ========================================
+// ユーティリティ
+// ========================================
+
+/**
+ * ユーザーがカテゴリを持っているか確認
+ * 
+ * 初回ログインかどうかの判定に使用。
+ * countのみ取得し、データ本体は取得しない（パフォーマンス最適化）。
+ */
 export async function hasCategories(userId: string): Promise<boolean> {
+    // head: true でデータ本体を取得せず、countのみ得る
     const { count, error } = await supabase
         .from('categories')
         .select('*', { count: 'exact', head: true })

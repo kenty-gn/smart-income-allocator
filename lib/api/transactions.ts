@@ -1,19 +1,47 @@
+/**
+ * transactions.ts - 取引（収入・支出）API
+ * 
+ * 【責務】
+ * - トランザクションのCRUD操作
+ * - 月間統計の集計
+ * - カテゴリ別支出の集計
+ * 
+ * 【設計方針】
+ * - フィルタリングはオプショナルで柔軟に対応
+ * - 日付は 'YYYY-MM-DD' 形式の文字列で統一
+ */
+
 import { supabase } from '@/lib/supabase';
 import { Transaction, TransactionType } from '@/types/database';
 
+/**
+ * トランザクション取得時のフィルタ条件
+ * 
+ * すべてオプショナル。指定しなければ全件取得。
+ */
 interface TransactionFilters {
-    startDate?: string;
-    endDate?: string;
-    type?: TransactionType;
-    categoryId?: string;
-    limit?: number;
+    startDate?: string;   // 開始日（この日以降）
+    endDate?: string;     // 終了日（この日以前）
+    type?: TransactionType;  // 'income' または 'expense'
+    categoryId?: string;  // 特定カテゴリのみ
+    limit?: number;       // 取得件数上限
 }
 
+// ========================================
 // トランザクション取得
+// ========================================
+
+/**
+ * トランザクション一覧を取得
+ * 
+ * 新しい順（日付降順、作成日降順）でソート。
+ * カテゴリ情報も結合して取得し、一覧表示で使用。
+ */
 export async function getTransactions(
     userId: string,
     filters?: TransactionFilters
 ): Promise<Transaction[]> {
+    // カテゴリ情報をJOINして取得（表示用）
     let query = supabase
         .from('transactions')
         .select('*, categories(name, color)')
@@ -21,6 +49,7 @@ export async function getTransactions(
         .order('date', { ascending: false })
         .order('created_at', { ascending: false });
 
+    // フィルタ条件を動的に追加
     if (filters?.startDate) {
         query = query.gte('date', filters.startDate);
     }
@@ -46,6 +75,7 @@ export async function getTransactions(
 
     return data || [];
 }
+
 
 // トランザクション作成
 export async function createTransaction(data: {

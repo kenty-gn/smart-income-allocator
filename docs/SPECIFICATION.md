@@ -36,6 +36,9 @@ app/
         ├── advice/       # アドバイスAPI
         ├── chat/         # チャットAPI
         └── challenge/    # チャレンジAPI
+    └── stripe/
+        ├── checkout/     # Stripe Checkoutセッション
+        └── webhook/      # Stripe Webhook処理
 
 components/
 ├── dashboard/
@@ -51,7 +54,8 @@ components/
 ├── chat/
 │   └── AIChatWidget.tsx     # チャットウィジェット
 ├── input/
-│   ├── AIInput.tsx          # AI入力
+│   ├── AIInput.tsx          # AI入力（タブ切り替え）
+│   ├── ReceiptScanner.tsx   # レシート読み取り
 │   └── ManualInput.tsx      # 手動入力
 ├── layout/
 │   ├── Header.tsx           # ヘッダー
@@ -146,6 +150,25 @@ types/
 
 ### POST /api/ai/challenge
 節約チャレンジを生成
+
+### POST /api/ai/receipt
+レシート画像から支出情報を抽出
+
+**Request:**
+```json
+{
+  "image": "data:image/jpeg;base64,...",
+  "categories": ["食費", "外食", ...]
+}
+```
+
+**Response:**
+```json
+{
+  "results": [
+    { "amount": 1500, "category": "食費", "description": "コンビニ" }
+  ]
+}
 
 ---
 

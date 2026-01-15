@@ -50,9 +50,9 @@ export function MainLayout({ children }: MainLayoutProps) {
     }, [transactions, categories, profile?.target_income]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-blue-50/30">
+        <div className="min-h-screen bg-gradient-soft">
             <Header />
-            <main className="container mx-auto px-4 py-6 pb-24 md:pb-6">
+            <main className="container mx-auto px-4 py-6 pb-24 md:pb-8">
                 {children}
             </main>
             <MobileNav />

@@ -1,5 +1,17 @@
 'use client';
 
+/**
+ * useCategories.ts - カテゴリデータを管理するカスタムフック
+ * 
+ * 【責務】
+ * - カテゴリのCRUD操作
+ * - リアルタイム同期（他デバイスでの変更を即座に反映）
+ * - 初回利用時のデフォルトカテゴリ自動作成
+ * 
+ * 【使用方法】
+ * const { categories, addCategory, removeCategory } = useCategories();
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/database';
@@ -13,23 +25,30 @@ import {
 } from '@/lib/api/categories';
 import { subscribeToCategories, unsubscribe } from '@/lib/realtime';
 
+/**
+ * カテゴリを管理するフック
+ * 
+ * 認証済みユーザーのカテゴリを取得し、リアルタイムで同期する。
+ * 初回ログイン時にデフォルトカテゴリを自動作成する。
+ * 
+ * @returns categories - カテゴリ一覧
+ * @returns fixedCategories - 固定費カテゴリ（家賃、通信費など）
+ * @returns variableCategories - 変動費カテゴリ（食費、娯楽など）
+ */
 export function useCategories() {
     const { user, isLoading: authLoading } = useAuth();
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    const fetchCategories = useCallback(async () => {
-        console.log('[useCategories] fetchCategories called', { authLoading, userId: user?.id });
 
+    const fetchCategories = useCallback(async () => {
         // 認証のロードが完了するまで待つ
         if (authLoading) {
-            console.log('[useCategories] Still loading auth, skipping fetch');
             return;
         }
 
         if (!user) {
-            console.log('[useCategories] No user, setting empty categories');
             setCategories([]);
             setIsLoading(false);
             return;
@@ -40,18 +59,13 @@ export function useCategories() {
             setError(null);
 
             // カテゴリが存在しない場合はデフォルトカテゴリを作成
-            console.log('[useCategories] Checking if categories exist for user', user.id);
             const exists = await hasCategories(user.id);
-            console.log('[useCategories] Categories exist:', exists);
 
             if (!exists) {
-                console.log('[useCategories] Creating default categories');
                 await createDefaultCategories(user.id);
             }
 
-            console.log('[useCategories] Fetching categories');
             const data = await getCategories(user.id);
-            console.log('[useCategories] Fetched categories:', data);
             setCategories(data);
         } catch (err) {
             console.error('Error in useCategories:', err);

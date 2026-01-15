@@ -116,18 +116,18 @@ export function TargetGap({ categories, disposableIncome, isPro = false }: Targe
                         ))}
                 </div>
             ) : (
-                <div className="relative rounded-xl bg-slate-50 border border-slate-200 p-6">
+                <div className="glass-subtle rounded-xl p-5">
                     <div className="flex flex-col items-center text-center">
                         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/25">
                             <Lock className="h-6 w-6 text-white" />
                         </div>
-                        <h4 className="mb-1 font-semibold text-slate-900">カテゴリー別詳細</h4>
+                        <h4 className="mb-1 font-semibold text-slate-900">Pro機能</h4>
                         <p className="mb-3 text-sm text-slate-500">
                             各カテゴリーの目標との差額を確認できます
                         </p>
                         <Button
                             size="sm"
-                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600"
+                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-lg shadow-amber-500/20"
                         >
                             <Crown className="mr-2 h-4 w-4" />
                             Proにアップグレード

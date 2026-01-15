@@ -105,7 +105,6 @@ export default function DashboardPage() {
     parsed: { amount: number; category: string; description: string }[]
   ) => {
     for (const p of parsed) {
-      // カテゴリ名からカテゴリIDを検索
       const category = categories.find((c) => c.name === p.category);
       if (category) {
         await addTransaction({
@@ -139,17 +138,19 @@ export default function DashboardPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">ダッシュボード</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+            ダッシュボード
+          </h1>
           <p className="text-sm text-slate-500">今月の予算を確認</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
+            <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/20 rounded-xl">
               <Plus className="mr-2 h-4 w-4" />
               支出を追加
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-slate-200 bg-white sm:max-w-md">
+          <DialogContent className="glass-strong border-0 sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-slate-900">支出を追加</DialogTitle>
             </DialogHeader>
@@ -161,33 +162,40 @@ export default function DashboardPage() {
         </Dialog>
       </motion.div>
 
-      {/* Budget Progress */}
-      <BudgetProgress summary={budgetSummary} />
+      {/* Bento Grid Layout */}
+      <div className="bento-grid">
+        {/* Budget Progress - Wide Card */}
+        <BudgetProgress summary={budgetSummary} />
 
-      {/* AI Input */}
-      <AIInput onTransactionAdd={handleAITransactionAdd} />
+        {/* AI Input */}
+        <div className="bento-wide">
+          <AIInput onTransactionAdd={handleAITransactionAdd} />
+        </div>
 
-      {/* Spending Forecast - Pro Feature */}
-      <SpendingForecast
-        transactions={transactions}
-        targetIncome={targetIncome}
-        fixedCosts={budgetSummary.fixed_costs}
-      />
+        {/* Pro Features Row - Equal Width */}
+        <div className="bento-wide">
+          <SpendingForecast
+            transactions={transactions}
+            targetIncome={targetIncome}
+            fixedCosts={budgetSummary.fixed_costs}
+            isPro={isPro}
+          />
+        </div>
 
-      {/* Savings Challenge - Pro Feature */}
-      <SavingsChallenge
-        transactions={transactions}
-        categories={categories}
-        isPro={isPro}
-      />
+        <div className="bento-wide">
+          <SavingsChallenge
+            transactions={transactions}
+            categories={categories}
+            isPro={isPro}
+          />
+        </div>
+      </div>
 
-      {/* Fixed Costs */}
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">固定費</h2>
-        {fixedCategories.length === 0 ? (
-          <p className="text-slate-500">固定費カテゴリがありません</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+      {/* Category Cards Section */}
+      {fixedCategories.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">固定費</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {fixedCategories.map((category, index) => (
               <CategoryCard
                 key={category.id}
@@ -197,16 +205,13 @@ export default function DashboardPage() {
               />
             ))}
           </div>
-        )}
-      </div>
+        </section>
+      )}
 
-      {/* Variable Costs */}
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">変動費</h2>
-        {variableCategories.length === 0 ? (
-          <p className="text-slate-500">変動費カテゴリがありません</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+      {variableCategories.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-slate-900">変動費</h2>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {variableCategories.map((category, index) => (
               <CategoryCard
                 key={category.id}
@@ -216,8 +221,8 @@ export default function DashboardPage() {
               />
             ))}
           </div>
-        )}
-      </div>
+        </section>
+      )}
     </div>
   );
 }

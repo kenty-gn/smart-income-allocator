@@ -2,16 +2,18 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Target, AlertTriangle, CheckCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, AlertTriangle, CheckCircle, Sparkles, Lock, Crown } from 'lucide-react';
 import { Transaction } from '@/types/database';
+import { Button } from '@/components/ui/button';
 
 interface SpendingForecastProps {
     transactions: Transaction[];
     targetIncome: number;
     fixedCosts: number;
+    isPro?: boolean;
 }
 
-export function SpendingForecast({ transactions, targetIncome, fixedCosts }: SpendingForecastProps) {
+export function SpendingForecast({ transactions, targetIncome, fixedCosts, isPro = false }: SpendingForecastProps) {
     const forecast = useMemo(() => {
         const now = new Date();
         const currentDay = now.getDate();
@@ -19,7 +21,6 @@ export function SpendingForecast({ transactions, targetIncome, fixedCosts }: Spe
         const daysRemaining = daysInMonth - currentDay;
         const daysPassed = currentDay;
 
-        // 今月の支出を集計
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const currentMonthExpenses = transactions
             .filter(t => {
@@ -28,22 +29,12 @@ export function SpendingForecast({ transactions, targetIncome, fixedCosts }: Spe
             })
             .reduce((sum, t) => sum + Number(t.amount), 0);
 
-        // 日平均支出
         const dailyAverage = daysPassed > 0 ? currentMonthExpenses / daysPassed : 0;
-
-        // 月末予測支出
         const projectedMonthlyExpense = currentMonthExpenses + (dailyAverage * daysRemaining);
-
-        // 予算（収入 - 固定費）
         const budget = targetIncome - fixedCosts;
-
-        // 予測貯蓄
         const projectedSavings = targetIncome - projectedMonthlyExpense;
-
-        // 予算との差
         const budgetGap = budget - projectedMonthlyExpense + fixedCosts;
 
-        // ステータス
         let status: 'good' | 'warning' | 'danger';
         if (budgetGap >= 0) {
             status = 'good';
@@ -76,67 +67,122 @@ export function SpendingForecast({ transactions, targetIncome, fixedCosts }: Spe
     const statusConfig = {
         good: {
             icon: CheckCircle,
-            color: 'emerald',
             message: '順調です！このまま続けましょう',
-            bgGradient: 'from-emerald-50 to-teal-50',
-            borderColor: 'border-emerald-200',
+            textColor: 'text-emerald-700',
+            iconColor: 'text-emerald-500',
+            badgeColor: 'bg-emerald-100 text-emerald-700',
         },
         warning: {
             icon: AlertTriangle,
-            color: 'amber',
-            message: '少しペースが速めです。調整を検討しましょう',
-            bgGradient: 'from-amber-50 to-orange-50',
-            borderColor: 'border-amber-200',
+            message: '少しペースが速めです',
+            textColor: 'text-amber-700',
+            iconColor: 'text-amber-500',
+            badgeColor: 'bg-amber-100 text-amber-700',
         },
         danger: {
             icon: TrendingDown,
-            color: 'rose',
-            message: '予算オーバーの見込みです。支出を見直しましょう',
-            bgGradient: 'from-rose-50 to-red-50',
-            borderColor: 'border-rose-200',
+            message: '予算オーバーの見込み',
+            textColor: 'text-rose-700',
+            iconColor: 'text-rose-500',
+            badgeColor: 'bg-rose-100 text-rose-700',
         },
     };
 
     const config = statusConfig[forecast.status];
     const StatusIcon = config.icon;
 
+    // Non-Pro: Show locked state
+    if (!isPro) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bento-item card-elevated p-5 h-full"
+            >
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl accent-gradient-violet shadow-lg shadow-violet-500/20">
+                        <Target className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-slate-900">AI月末予測</h3>
+                            <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
+                                <Sparkles className="h-3 w-3" /> PRO
+                            </span>
+                        </div>
+                        <p className="text-xs text-slate-500">残り{forecast.daysRemaining}日</p>
+                    </div>
+                </div>
+
+                <div className="glass-subtle rounded-xl p-5 text-center">
+                    <div className="mb-3 flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/25">
+                        <Lock className="h-6 w-6 text-white" />
+                    </div>
+                    <h4 className="mb-1 font-semibold text-slate-900">Pro機能</h4>
+                    <p className="mb-3 text-sm text-slate-500">
+                        AIが月末の支出を予測します
+                    </p>
+                    <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-lg shadow-amber-500/20"
+                    >
+                        <Crown className="mr-2 h-4 w-4" />
+                        Proにアップグレード
+                    </Button>
+                </div>
+            </motion.div>
+        );
+    }
+
+    // Pro: Show full functionality
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`rounded-2xl border ${config.borderColor} bg-gradient-to-br ${config.bgGradient} p-6 shadow-sm`}
+            className="bento-item glass-pro p-5 h-full"
         >
-            <div className="mb-4 flex items-center justify-between">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-${config.color}-500 shadow-lg`}>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl accent-gradient-violet shadow-lg shadow-violet-500/20">
                         <Target className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-slate-900">月末予測</h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-slate-900">AI月末予測</h3>
+                            <span className="flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
+                                <Sparkles className="h-3 w-3" /> PRO
+                            </span>
+                        </div>
                         <p className="text-xs text-slate-500">残り{forecast.daysRemaining}日</p>
                     </div>
                 </div>
-                <StatusIcon className={`h-6 w-6 text-${config.color}-500`} />
+                <StatusIcon className={`h-6 w-6 ${config.iconColor}`} />
             </div>
 
-            <p className={`mb-4 text-sm text-${config.color}-700`}>{config.message}</p>
+            {/* Status Message */}
+            <div className={`mb-4 rounded-lg ${config.badgeColor} px-3 py-2 text-sm font-medium`}>
+                {config.message}
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-white/60 p-3 text-center">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="glass-subtle rounded-xl p-3 text-center">
                     <p className="text-xs text-slate-500 mb-1">現在の支出</p>
                     <p className="text-lg font-bold text-slate-900">
                         {formatCurrency(forecast.currentExpense)}
                     </p>
                 </div>
-                <div className="rounded-xl bg-white/60 p-3 text-center">
+                <div className="glass-subtle rounded-xl p-3 text-center">
                     <p className="text-xs text-slate-500 mb-1">月末予測</p>
-                    <p className={`text-lg font-bold text-${forecast.status === 'good' ? 'emerald' : forecast.status === 'warning' ? 'amber' : 'rose'}-600`}>
+                    <p className={`text-lg font-bold ${config.textColor}`}>
                         {formatCurrency(forecast.projectedExpense)}
                     </p>
                 </div>
             </div>
 
-            <div className="mt-4 rounded-xl bg-white/60 p-3">
+            {/* Projected Savings */}
+            <div className="mt-3 glass-subtle rounded-xl p-3">
                 <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">予測貯蓄額</span>
                     <div className="flex items-center gap-2">
@@ -152,8 +198,8 @@ export function SpendingForecast({ transactions, targetIncome, fixedCosts }: Spe
                 </div>
             </div>
 
-            <p className="mt-3 text-xs text-slate-400 text-center">
-                日平均支出: {formatCurrency(forecast.dailyAverage)} / 日
+            <p className="mt-2 text-xs text-slate-400 text-center">
+                日平均: {formatCurrency(forecast.dailyAverage)}/日
             </p>
         </motion.div>
     );

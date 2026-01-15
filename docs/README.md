@@ -43,6 +43,8 @@ npm run lint
 | フェーズ5: AI拡張 | ✅ 完了 | アドバイス、予測、チャット |
 | フェーズ6: サブスク改善 | ✅ 完了 | Free/Pro差別化 |
 | フェーズ7: リアルタイム同期 | ✅ 完了 | マルチデバイス対応 |
+| フェーズ8: レシート読み取り | ✅ 完了 | Vision API連携 |
+| フェーズ9: Stripe決済 | ✅ 完了 | サブスク決済 |
 
 ---
 
@@ -63,6 +65,7 @@ npm run lint
 - `app/api/ai/advice/route.ts` - AIアドバイス生成
 - `app/api/ai/chat/route.ts` - チャット応答
 - `app/api/ai/challenge/route.ts` - 節約チャレンジ
+- `app/api/ai/receipt/route.ts` - レシート読み取り
 
 ### データベース
 - `lib/supabase.ts` - Supabaseクライアント
@@ -86,9 +89,10 @@ npm run lint
 | 支出登録 | ✅ | ✅ |
 | 月別貯蓄グラフ | ✅ | ✅ |
 | 全体目標サマリー | ✅ | ✅ |
+| AI入力 | ✅ | ✅ |
+| レシート読み取り | ✅ | ✅ |
 | カテゴリー別分析 | 🔒 | ✅ |
 | 年間集計 | 🔒 | ✅ |
-| AI入力 | 🔒 | ✅ |
 | AIアドバイス | 🔒 | ✅ |
 | チャットアシスタント | 🔒 | ✅ |
 | 節約チャレンジ | 🔒 | ✅ |
@@ -107,6 +111,4 @@ OPENAI_API_KEY=your_openai_api_key
 
 ## 📝 今後の候補
 
-- レシート読み取り（Vision API）
-- Stripe決済連携
 - iOSアプリ開発（React Native / Swift）

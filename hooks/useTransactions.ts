@@ -1,5 +1,25 @@
 'use client';
 
+/**
+ * useTransactions.ts - 取引データを管理するカスタムフック
+ * 
+ * 【責務】
+ * - 取引（収入・支出）のCRUD操作
+ * - リアルタイム同期
+ * - フィルタリング（期間、種別、カテゴリ）
+ * 
+ * 【使用方法】
+ * // 全取引を取得
+ * const { transactions, addTransaction } = useTransactions();
+ * 
+ * // 今月の支出のみ取得
+ * const { transactions } = useTransactions({
+ *   startDate: '2026-01-01',
+ *   endDate: '2026-01-31',
+ *   type: 'expense',
+ * });
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Transaction, TransactionType } from '@/types/database';
@@ -12,6 +32,12 @@ import {
 } from '@/lib/api/transactions';
 import { subscribeToTransactions, unsubscribe } from '@/lib/realtime';
 
+/**
+ * トランザクションにカテゴリ情報を付加した型
+ * 
+ * JOINで取得したカテゴリ名・色を保持する。
+ * 一覧表示でカテゴリ名を表示するために使用。
+ */
 interface TransactionWithCategory extends Transaction {
     categories?: {
         name: string;
@@ -19,6 +45,12 @@ interface TransactionWithCategory extends Transaction {
     };
 }
 
+/**
+ * useTransactionsのオプション
+ * 
+ * フィルタ条件を指定して取得データを絞り込む。
+ * フックの引数が変わると自動的に再取得される。
+ */
 interface UseTransactionsOptions {
     startDate?: string;
     endDate?: string;
@@ -27,11 +59,15 @@ interface UseTransactionsOptions {
     limit?: number;
 }
 
+/**
+ * トランザクションを管理するメインフック
+ */
 export function useTransactions(options?: UseTransactionsOptions) {
     const { user, isLoading: authLoading } = useAuth();
     const [transactions, setTransactions] = useState<TransactionWithCategory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
+
 
     const fetchTransactions = useCallback(async () => {
         // 認証のロードが完了するまで待つ

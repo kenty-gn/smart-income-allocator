@@ -7,6 +7,8 @@ export interface Profile {
   salary_day: number;
   target_income: number;
   subscription_tier: SubscriptionTier;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
 }
 
 export interface Category {

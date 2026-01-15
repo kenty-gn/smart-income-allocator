@@ -134,9 +134,9 @@ export function YearlySummary({ transactions, targetIncome, isPro = false }: Yea
                     </div>
                 </>
             ) : (
-                <div className="relative">
+                <div className="relative min-h-[200px]">
                     {/* Blurred Preview */}
-                    <div className="grid grid-cols-3 gap-4 opacity-40 blur-sm pointer-events-none">
+                    <div className="grid grid-cols-3 gap-4 opacity-30 blur-sm pointer-events-none" aria-hidden="true">
                         <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-center">
                             <p className="text-xs text-slate-600 mb-1">年間収入</p>
                             <p className="text-lg font-bold text-blue-600">{previewData.income}</p>
@@ -152,17 +152,17 @@ export function YearlySummary({ transactions, targetIncome, isPro = false }: Yea
                     </div>
 
                     {/* Lock Overlay */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
                         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/25">
                             <Lock className="h-6 w-6 text-white" />
                         </div>
-                        <h4 className="mb-1 font-semibold text-slate-900">年間集計</h4>
+                        <h4 className="mb-1 font-semibold text-slate-900">Pro機能</h4>
                         <p className="mb-3 text-sm text-slate-500 text-center px-4">
                             年間の収支と貯蓄予測を確認できます
                         </p>
                         <Button
                             size="sm"
-                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600"
+                            className="bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-lg shadow-amber-500/20"
                         >
                             <Crown className="mr-2 h-4 w-4" />
                             Proにアップグレード

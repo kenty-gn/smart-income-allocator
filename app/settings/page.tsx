@@ -69,14 +69,42 @@ export default function SettingsPage() {
     const toggleSubscription = async () => {
         if (!user) return;
 
+        // すでにProの場合はfreeに戻す（テスト用トグル）
+        if (isPro) {
+            try {
+                setIsTogglingPlan(true);
+                await updateProfile(user.id, { subscription_tier: 'free' });
+                await refreshProfile();
+                setIsPro(false);
+            } catch (error) {
+                console.error('Error toggling subscription:', error);
+            } finally {
+                setIsTogglingPlan(false);
+            }
+            return;
+        }
+
+        // Freeの場合はStripe Checkoutへ
         try {
             setIsTogglingPlan(true);
-            const newTier = isPro ? 'free' : 'pro';
-            await updateProfile(user.id, { subscription_tier: newTier });
-            await refreshProfile();
-            setIsPro(!isPro);
+            const response = await fetch('/api/stripe/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    userEmail: user.email,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                console.error('No checkout URL returned:', data);
+            }
         } catch (error) {
-            console.error('Error toggling subscription:', error);
+            console.error('Error creating checkout session:', error);
         } finally {
             setIsTogglingPlan(false);
         }
